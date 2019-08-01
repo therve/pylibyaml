@@ -32,7 +32,7 @@ static PyObject* handle(PyObject* value, PyObject* parent, PyObject* key) {
 
 static PyObject* parse(PyObject* self, PyObject* args)
 {
-    const char *input;
+    const unsigned char *input;
     int length;
 
     if (!PyArg_ParseTuple(args, "s#", &input, &length)) {
@@ -94,7 +94,7 @@ static PyObject* parse(PyObject* self, PyObject* args)
             case YAML_ALIAS_EVENT:
                 break;
             case YAML_SCALAR_EVENT:
-                current = PyUnicode_DecodeUTF8(event.data.scalar.value,
+                current = PyUnicode_DecodeUTF8((const char*) event.data.scalar.value,
                                                event.data.scalar.length,
                                                "strict");
                 pending_key = handle(current, current_node->value, pending_key);
