@@ -48,6 +48,7 @@ static PyObject* parse(PyObject* self, PyObject* args)
     PyObject* current;
     PyObject* pending_key;
     node_t* current_node = create_node(Py_None, NULL);
+    node_t* old_node;
 
     yaml_parser_set_input_string(&parser,  input, length);
 
@@ -72,7 +73,9 @@ static PyObject* parse(PyObject* self, PyObject* args)
                 break;
             case YAML_SEQUENCE_END_EVENT:
                 if (current_node->parent->parent != NULL) {
+                    old_node = current_node;
                     current_node = current_node->parent;
+                    free(old_node);
                 }
                 break;
             case YAML_MAPPING_START_EVENT:
@@ -82,7 +85,9 @@ static PyObject* parse(PyObject* self, PyObject* args)
                 break;
             case YAML_MAPPING_END_EVENT:
                 if (current_node->parent->parent != NULL) {
+                    old_node = current_node;
                     current_node = current_node->parent;
+                    free(old_node);
                 }
                 break;
             /* Data */
@@ -106,8 +111,10 @@ static PyObject* parse(PyObject* self, PyObject* args)
     }
 
 error:
+    current = current_node->value;
+    free(current_node);
     yaml_parser_delete(&parser);
-    return current_node->value;
+    return current;
 }
 
 
