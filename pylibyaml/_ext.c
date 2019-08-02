@@ -3,6 +3,19 @@
 
 static PyObject *ParserError;
 
+#define HANDLE switch(handle(current, current_node->value, current_node->pending_key)) {\
+                    case -1:\
+                        current_node->value = NULL;\
+                        yaml_event_delete(&event);\
+                        goto error;\
+                    case 1:\
+                        current_node->pending_key = current;\
+                        break;\
+                    case 0:\
+                        current_node->pending_key = NULL;\
+                        break;\
+                }
+
 
 typedef struct node {
     PyObject* value;
@@ -141,18 +154,7 @@ static PyObject* parse(PyObject* self, PyObject* args)
                 break;
             case YAML_SEQUENCE_START_EVENT:
                 current = PyList_New(0);
-                switch(handle(current, current_node->value, current_node->pending_key)) {
-                    case -1:
-                        current_node->value = NULL;
-                        yaml_event_delete(&event);
-                        goto error;
-                    case 1:
-                        current_node->pending_key = current;
-                        break;
-                    case 0:
-                        current_node->pending_key = NULL;
-                        break;
-                }
+                HANDLE;
                 current_node = create_node(current, current_node, current_node->pending_key);
                 break;
             case YAML_SEQUENCE_END_EVENT:
@@ -164,18 +166,7 @@ static PyObject* parse(PyObject* self, PyObject* args)
                 break;
             case YAML_MAPPING_START_EVENT:
                 current = PyDict_New();
-                switch(handle(current, current_node->value, current_node->pending_key)) {
-                    case -1:
-                        current_node->value = NULL;
-                        yaml_event_delete(&event);
-                        goto error;
-                    case 1:
-                        current_node->pending_key = current;
-                        break;
-                    case 0:
-                        current_node->pending_key = NULL;
-                        break;
-                }
+                HANDLE;
                 current_node = create_node(current, current_node, current_node->pending_key);
                 break;
             case YAML_MAPPING_END_EVENT:
@@ -192,18 +183,7 @@ static PyObject* parse(PyObject* self, PyObject* args)
                 current = PyUnicode_DecodeUTF8((const char*) event.data.scalar.value,
                                                event.data.scalar.length,
                                                "strict");
-                switch(handle(current, current_node->value, current_node->pending_key)) {
-                    case -1:
-                        current_node->value = NULL;
-                        yaml_event_delete(&event);
-                        goto error;
-                    case 1:
-                        current_node->pending_key = current;
-                        break;
-                    case 0:
-                        current_node->pending_key = NULL;
-                        break;
-                }
+                HANDLE;
                 if (current_node->parent == NULL) {
                     current_node->value = current;
                 }
