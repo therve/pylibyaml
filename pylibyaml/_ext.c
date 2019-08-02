@@ -3,6 +3,7 @@
 
 static PyObject *ParserError;
 
+
 #define HANDLE switch(handle(current, current_node->value, current_node->pending_key)) {\
                     case -1:\
                         current_node->value = NULL;\
@@ -59,33 +60,33 @@ char *make_message(const char *fmt, ...){
     char *p, *np;
     va_list ap;
 
-   if ((p = PyMem_RawMalloc(size)) == NULL) {
+    if ((p = PyMem_RawMalloc(size)) == NULL) {
         return NULL;
-   }
+    }
 
-   while (1) {
-
-       /* Try to print in the allocated space */
-
-       va_start(ap, fmt);
+    while (1) {
+        /* Try to print in the allocated space */
+        va_start(ap, fmt);
         n = vsnprintf(p, size, fmt, ap);
         va_end(ap);
 
-       /* Check error code */
+        /* Check error code */
 
-       if (n < 0)
+        if (n < 0) {
             return NULL;
+        }
 
-       /* If that worked, return the string */
+        /* If that worked, return the string */
 
-       if (n < size)
+        if (n < size) {
             return p;
+        }
 
-       /* Else try again with more space */
+        /* Else try again with more space */
 
-       size = n + 1;
+        size = n + 1;
 
-       if ((np = PyMem_RawRealloc(p, size)) == NULL) {
+        if ((np = PyMem_RawRealloc(p, size)) == NULL) {
             PyMem_RawFree(p);
             return NULL;
         } else {
