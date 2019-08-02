@@ -12,7 +12,7 @@ typedef struct node {
 
 
 node_t* create_node(PyObject* value, node_t* parent, PyObject* key) {
-    node_t* new_node = malloc(sizeof(node_t));
+    node_t* new_node = PyMem_RawMalloc(sizeof(node_t));
     new_node->value = value;
     new_node->parent = parent;
     new_node->pending_key = key;
@@ -43,7 +43,7 @@ char *make_message(const char *fmt, ...){
     char *p, *np;
     va_list ap;
 
-   if ((p = malloc(size)) == NULL) {
+   if ((p = PyMem_RawMalloc(size)) == NULL) {
         return NULL;
    }
 
@@ -69,8 +69,8 @@ char *make_message(const char *fmt, ...){
 
        size = n + 1;
 
-       if ((np = realloc (p, size)) == NULL) {
-            free(p);
+       if ((np = PyMem_RawRealloc(p, size)) == NULL) {
+            PyMem_RawFree(p);
             return NULL;
         } else {
             p = np;
@@ -156,7 +156,7 @@ static PyObject* parse(PyObject* self, PyObject* args)
                 if (current_node->parent->parent != NULL) {
                     old_node = current_node;
                     current_node = current_node->parent;
-                    free(old_node);
+                    PyMem_RawFree(old_node);
                 }
                 break;
             case YAML_MAPPING_START_EVENT:
@@ -179,7 +179,7 @@ static PyObject* parse(PyObject* self, PyObject* args)
                 if (current_node->parent->parent != NULL) {
                     old_node = current_node;
                     current_node = current_node->parent;
-                    free(old_node);
+                    PyMem_RawFree(old_node);
                 }
                 break;
             /* Data */
@@ -214,7 +214,7 @@ static PyObject* parse(PyObject* self, PyObject* args)
 
 error:
     current = current_node->value;
-    free(current_node);
+    PyMem_RawFree(current_node);
     yaml_parser_delete(&parser);
     return current;
 }
