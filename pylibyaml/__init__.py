@@ -1,3 +1,3 @@
-from _ext import parse
+from _ext import parse, ParserError
 
-__all__ = ['parse']
+__all__ = ['parse', 'ParserError']

@@ -1,4 +1,4 @@
-from pylibyaml import parse
+from pylibyaml import parse, ParserError
 
 import pytest
 
@@ -38,3 +38,8 @@ def test_list_in_dict():
 def test_unhashable_key():
     with pytest.raises(TypeError):
         parse("- {{}}")
+
+
+def test_parser_error():
+    with pytest.raises(ParserError):
+        parse("- {")

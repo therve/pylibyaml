@@ -1,6 +1,8 @@
 #include <Python.h>
 #include <yaml.h>
 
+static PyObject *ParserError;
+
 
 typedef struct node {
     PyObject* value;
@@ -59,7 +61,8 @@ static PyObject* parse(PyObject* self, PyObject* args)
 
     while (!done) {
         if (!yaml_parser_parse(&parser, &event)) {
-            printf("Parser error %d\n", parser.error);
+            PyErr_SetString(ParserError, "Parsing failed");
+            current_node->value = NULL;
             goto error;
         }
 
@@ -171,11 +174,29 @@ static struct PyModuleDef module = {
     "_ext",
     "libyaml extension module",
     -1,
-    methods
+    methods,
+    NULL,
+    NULL,
+    NULL,
+    NULL
 };
 
 
-PyMODINIT_FUNC PyInit__ext(void)
-{
-    return PyModule_Create(&module);
+PyMODINIT_FUNC PyInit__ext(void) {
+    PyObject *m;
+    m = PyModule_Create(&module);
+    if (m == NULL) {
+        return NULL;
+    }
+
+    if (ParserError == NULL) {
+        ParserError = PyErr_NewException("_ext.ParserError", NULL, NULL);
+    }
+
+    if (ParserError != NULL) {
+        Py_INCREF(ParserError);
+        PyModule_AddObject(m, "ParserError", ParserError);
+    }
+
+    return m;
 }
