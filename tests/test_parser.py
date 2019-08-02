@@ -41,5 +41,6 @@ def test_unhashable_key():
 
 
 def test_parser_error():
-    with pytest.raises(ParserError):
+    with pytest.raises(ParserError) as e:
         parse("- {")
+    assert str(e.value) == "did not find expected node content"

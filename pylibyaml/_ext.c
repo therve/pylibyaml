@@ -61,7 +61,22 @@ static PyObject* parse(PyObject* self, PyObject* args)
 
     while (!done) {
         if (!yaml_parser_parse(&parser, &event)) {
-            PyErr_SetString(ParserError, "Parsing failed");
+            const char* message;
+            switch(parser.error) {
+                case YAML_MEMORY_ERROR:
+                    message = "Memory error";
+                    break;
+                case YAML_READER_ERROR:
+                    message = parser.problem;
+                    break;
+                case YAML_SCANNER_ERROR:
+                case YAML_PARSER_ERROR:
+                    message = parser.problem;
+                    break;
+                default:
+                    message = "Parsing failed";
+            }
+            PyErr_SetString(ParserError, message);
             current_node->value = NULL;
             goto error;
         }
