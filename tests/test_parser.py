@@ -11,6 +11,14 @@ def test_dict():
     assert parse("foo: bar\negg: spam") == {"foo": "bar", "egg": "spam"}
 
 
+def test_none_as_empty():
+    assert parse("foo:") == {"foo": ""}
+
+
+def test_int_as_string():
+    assert parse("foo: 1") == {"foo": "1"}
+
+
 def test_list():
     assert parse("- foo\n- bar") == ["foo", "bar"]
 
