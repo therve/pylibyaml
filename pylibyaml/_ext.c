@@ -21,6 +21,9 @@ node_t* create_node(PyObject* value, node_t* parent, PyObject* key) {
 
 
 static int handle(PyObject* value, PyObject* parent, PyObject* key) {
+    if (value == NULL) {
+        return -1;
+    }
     if (PyList_CheckExact(parent)) {
         if (PyList_Append(parent, value) == -1) {
             return -1;
