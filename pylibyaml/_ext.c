@@ -37,6 +37,47 @@ static int handle(PyObject* value, PyObject* parent, PyObject* key) {
     return 0;
 }
 
+char *make_message(const char *fmt, ...){
+    int n;
+    int size = 100;
+    char *p, *np;
+    va_list ap;
+
+   if ((p = malloc(size)) == NULL) {
+        return NULL;
+   }
+
+   while (1) {
+
+       /* Try to print in the allocated space */
+
+       va_start(ap, fmt);
+        n = vsnprintf(p, size, fmt, ap);
+        va_end(ap);
+
+       /* Check error code */
+
+       if (n < 0)
+            return NULL;
+
+       /* If that worked, return the string */
+
+       if (n < size)
+            return p;
+
+       /* Else try again with more space */
+
+       size = n + 1;
+
+       if ((np = realloc (p, size)) == NULL) {
+            free(p);
+            return NULL;
+        } else {
+            p = np;
+        }
+    }
+}
+
 
 static PyObject* parse(PyObject* self, PyObject* args)
 {
@@ -71,7 +112,8 @@ static PyObject* parse(PyObject* self, PyObject* args)
                     break;
                 case YAML_SCANNER_ERROR:
                 case YAML_PARSER_ERROR:
-                    message = parser.problem;
+                    // column doesn't seem to have proper information
+                    message = make_message("%s %s, line %d", parser.context, parser.problem, parser.context_mark.line);
                     break;
                 default:
                     message = "Parsing failed";

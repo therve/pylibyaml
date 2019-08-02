@@ -42,5 +42,5 @@ def test_unhashable_key():
 
 def test_parser_error():
     with pytest.raises(ParserError) as e:
-        parse("- {")
-    assert str(e.value) == "did not find expected node content"
+        parse("- foo\n- bar: {")
+    assert str(e.value) == "while parsing a flow node did not find expected node content, line 2"
